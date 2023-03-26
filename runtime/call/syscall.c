@@ -14,6 +14,8 @@
 
 #include "call/syscall_nums.h"
 
+#define RT_DEBUG_PRINT 0
+
 #ifdef USE_IO_SYSCALL
 #include "call/io_wrap.h"
 #endif /* USE_IO_SYSCALL */
@@ -166,15 +168,27 @@ void handle_syscall(struct encl_ctx* ctx)
 
   switch (n) {
   case(RUNTIME_SYSCALL_EXIT):
+    #if RT_DEBUG_PRINT 
+    print_strace("D[RT] Exit enclave (runtime/call/syscall.c)\r\n");
+    #endif
     sbi_exit_enclave(arg0);
     break;
   case(RUNTIME_SYSCALL_OCALL):
+    #if RT_DEBUG_PRINT 
+    print_strace("D[RT] Dispatch edgecall ocall (runtime/call/syscall.c)\r\n");
+    #endif
     ret = dispatch_edgecall_ocall(arg0, (void*)arg1, arg2, (void*)arg3, arg4);
     break;
   case(RUNTIME_SYSCALL_SHAREDCOPY):
+    #if RT_DEBUG_PRINT 
+    print_strace("D[RT] Copy from shared (runtime/call/syscall.c)\r\n");
+    #endif
     ret = handle_copy_from_shared((void*)arg0, arg1, arg2);
     break;
   case(RUNTIME_SYSCALL_ATTEST_ENCLAVE):;
+    #if RT_DEBUG_PRINT 
+    print_strace("D[RT] Attest enclave (runtime/call/syscall.c)\r\n");
+    #endif
     copy_from_user((void*)rt_copy_buffer_2, (void*)arg1, arg2);
 
     ret = sbi_attest_enclave(rt_copy_buffer_1, rt_copy_buffer_2, arg2);
@@ -184,6 +198,9 @@ void handle_syscall(struct encl_ctx* ctx)
     //print_strace("[ATTEST] p1 0x%p->0x%p p2 0x%p->0x%p sz %lx = %lu\r\n",arg0,arg0_trans,arg1,arg1_trans,arg2,ret);
     break;
   case(RUNTIME_SYSCALL_GET_SEALING_KEY):;
+    #if RT_DEBUG_PRINT 
+    print_strace("D[RT] Get sealing key (runtime/call/syscall.c)\r\n");
+    #endif
     /* Stores the key receive structure */
     uintptr_t buffer_1_pa = kernel_va_to_pa(rt_copy_buffer_1);
 
