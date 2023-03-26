@@ -8,6 +8,8 @@
 #include <asm/sbi.h>
 #include <linux/uaccess.h>
 
+#define LKD_DEBUG_PRINT 0
+
 int __keystone_destroy_enclave(unsigned int ueid);
 
 int keystone_create_enclave(struct file *filep, unsigned long arg)
@@ -238,18 +240,33 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 
   switch (cmd) {
     case KEYSTONE_IOC_CREATE_ENCLAVE:
+      #if LKD_DEBUG_PRINT
+      pr_info("D[LKD] Create enclave (linux-keystone-driver/keystone-ioctl.c)\n");
+      #endif
       ret = keystone_create_enclave(filep, (unsigned long) data);
       break;
     case KEYSTONE_IOC_FINALIZE_ENCLAVE:
+      #if LKD_DEBUG_PRINT
+      pr_info("D[LKD] Finalize enclave (linux-keystone-driver/keystone-ioctl.c)\n");
+      #endif
       ret = keystone_finalize_enclave((unsigned long) data);
       break;
     case KEYSTONE_IOC_DESTROY_ENCLAVE:
+      #if LKD_DEBUG_PRINT
+      pr_info("D[LKD] Destroy enclave (linux-keystone-driver/keystone-ioctl.c)\n");
+      #endif
       ret = keystone_destroy_enclave(filep, (unsigned long) data);
       break;
     case KEYSTONE_IOC_RUN_ENCLAVE:
+      #if LKD_DEBUG_PRINT
+      pr_info("D[LKD] Run enclave (linux-keystone-driver/keystone-ioctl.c)\n");
+      #endif
       ret = keystone_run_enclave((unsigned long) data);
       break;
     case KEYSTONE_IOC_RESUME_ENCLAVE:
+      #if LKD_DEBUG_PRINT
+      pr_info("D[LKD] Resume enclave (linux-keystone-driver/keystone-ioctl.c)\n");
+      #endif
       ret = keystone_resume_enclave((unsigned long) data);
       break;
     /* Note that following commands could have been implemented as a part of ADD_PAGE ioctl.
@@ -257,6 +274,9 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
      * that ends up with an illegal instruction if we combine switch-case and if statements.
      * We didn't identified the exact problem, so we'll have these until we figure out */
     case KEYSTONE_IOC_UTM_INIT:
+      #if LKD_DEBUG_PRINT
+      pr_info("D[LKD] UTM init (linux-keystone-driver/keystone-ioctl.c)\n");
+      #endif
       ret = utm_init_ioctl(filep, (unsigned long) data);
       break;
     default:
