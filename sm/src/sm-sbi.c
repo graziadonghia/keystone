@@ -7,6 +7,8 @@
 #include "enclave.h"
 #include "page.h"
 #include "cpu.h"
+#include "mprv.h"
+#include "my_string.h"
 #include "platform-hook.h"
 #include "plugins/plugins.h"
 #include <sbi/riscv_asm.h>
@@ -95,5 +97,12 @@ unsigned long sbi_sm_call_plugin(uintptr_t plugin_id, uintptr_t call_id, uintptr
 {
   unsigned long ret;
   ret = call_plugin(cpu_get_enclave_id(), plugin_id, call_id, arg0, arg1);
+  return ret;
+}
+
+unsigned long
+sbi_sm_print_string(uintptr_t string, size_t len, uintptr_t retbuf){
+  unsigned long ret;
+  ret = print_string(string, len, retbuf);
   return ret;
 }

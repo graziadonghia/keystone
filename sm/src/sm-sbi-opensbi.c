@@ -101,6 +101,9 @@ static int sbi_ecall_keystone_enclave_handler(unsigned long extid, unsigned long
       #endif
       retval = sbi_sm_call_plugin(regs->a0, regs->a1, regs->a2, regs->a3);
       break;
+    case SBI_SM_PRINT_STRING:
+      retval = sbi_sm_print_string(regs->a0, regs->a1, regs->a2);
+      break;
     default:
       retval = SBI_ERR_SM_NOT_IMPLEMENTED;
       break;
