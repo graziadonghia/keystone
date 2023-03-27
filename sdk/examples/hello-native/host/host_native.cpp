@@ -9,7 +9,12 @@ unsigned long
 print_string(char* str);
 void
 print_string_wrapper(void* buffer);
+unsigned long
+print_number(int num);
+void
+print_number_wrapper(void* buffer);
 #define OCALL_PRINT_STRING 1
+#define OCALL_PRINT_NUMBER 2
 
 /***
  * An example call that will be exposed to the enclave application as
@@ -20,6 +25,11 @@ print_string_wrapper(void* buffer);
 unsigned long
 print_string(char* str) {
   return printf("Enclave said: \"%s\"\n", str);
+}
+
+unsigned long 
+print_number(int num) {
+  return printf("Enclave said: \"%d\"\n", num);
 }
 
 int
@@ -37,6 +47,7 @@ main(int argc, char** argv) {
   /* We must specifically register functions we want to export to the
      enclave. */
   register_call(OCALL_PRINT_STRING, print_string_wrapper);
+  register_call(OCALL_PRINT_NUMBER, print_number_wrapper);
 
   edge_call_init_internals(
       (uintptr_t)enclave.getSharedBuffer(), enclave.getSharedBufferSize());
@@ -64,6 +75,33 @@ print_string_wrapper(void* buffer) {
 
   /* Pass the arguments from the eapp to the exported ocall function */
   ret_val = print_string((char*)call_args);
+
+  /* Setup return data from the ocall function */
+  uintptr_t data_section = edge_call_data_ptr();
+  memcpy((void*)data_section, &ret_val, sizeof(unsigned long));
+  if (edge_call_setup_ret(
+          edge_call, (void*)data_section, sizeof(unsigned long))) {
+    edge_call->return_data.call_status = CALL_STATUS_BAD_PTR;
+  } else {
+    edge_call->return_data.call_status = CALL_STATUS_OK;
+  }
+
+  /* This will now eventually return control to the enclave */
+  return;
+}
+
+void
+print_number_wrapper(void* buffer){
+  struct edge_call* edge_call = (struct edge_call*)buffer;
+  uintptr_t call_args;
+  unsigned long ret_val;
+  size_t arg_len;
+  if (edge_call_args_ptr(edge_call, &call_args, &arg_len) != 0) {
+    edge_call->return_data.call_status = CALL_STATUS_BAD_OFFSET;
+    return;
+  }
+   /* Pass the arguments from the eapp to the exported ocall function */
+  ret_val = print_number(*((int*)call_args));
 
   /* Setup return data from the ocall function */
   uintptr_t data_section = edge_call_data_ptr();
