@@ -226,6 +226,11 @@ void handle_syscall(struct encl_ctx* ctx)
 
     break;
 
+    case(RUNTIME_SYSCALL_PRINT_STRING):
+    copy_from_user(rt_copy_buffer_1, (void*)arg0, arg1);
+    ret = sbi_print_string(rt_copy_buffer_1, arg1, (void *) rt_copy_buffer_2);
+    copy_to_user((void*)arg2, rt_copy_buffer_2, sizeof(int));
+    break;
 
 #ifdef USE_LINUX_SYSCALL
   case(SYS_clock_gettime):
