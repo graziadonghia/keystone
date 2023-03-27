@@ -33,3 +33,8 @@ get_sealing_key(
       SYSCALL_GET_SEALING_KEY, sealing_key_struct, sealing_key_struct_size,
       key_ident, key_ident_size);
 }
+
+int
+print_string(void* string, size_t len, void* retbuf){
+  return SYSCALL_3(SYSCALL_PRINT_STRING, string, len, retbuf);
+}
