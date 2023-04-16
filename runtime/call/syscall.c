@@ -15,6 +15,7 @@
 #include "call/syscall_nums.h"
 
 #define RT_DEBUG_PRINT 0
+#define RT_DEBUG_INFO  0 
 
 #ifdef USE_IO_SYSCALL
 #include "call/io_wrap.h"
@@ -73,6 +74,17 @@ uintptr_t dispatch_edgecall_ocall( unsigned long call_id,
 				   void* return_buffer, size_t return_len){
 
   uintptr_t ret;
+  #if (RT_DEBUG_PRINT && RT_DEBUG_INFO)
+  print_strace("D[RT] call_id = %lu\r\n", call_id);
+  print_strace("D[RT] data = %p\r\n", data);
+  print_strace("D[RT] data_len = %lu\r\n", data_len);
+  print_strace("D[RT] return_buffer = %p\r\n", return_buffer);
+  print_strace("D[RT] return_len = %lu\r\n", return_len);
+  print_strace("D[RT]\r\n");
+  print_strace("D[RT] shared_buffer = 0x%lx\r\n", shared_buffer);
+  print_strace("D[RT] shared_buffer_size = 0x%lx\r\n", shared_buffer_size);
+  print_strace("D[RT] sizeof(struct edge_call) = %lu\r\n", sizeof(struct edge_call));
+  #endif
   /* For now we assume by convention that the start of the buffer is
    * the right place to put calls */
   struct edge_call* edge_call = (struct edge_call*)shared_buffer;
@@ -83,6 +95,9 @@ uintptr_t dispatch_edgecall_ocall( unsigned long call_id,
 
   edge_call->call_id = call_id;
   uintptr_t buffer_data_start = edge_call_data_ptr();
+  #if (RT_DEBUG_PRINT && RT_DEBUG_INFO)
+  print_strace("D[RT] buffer_data_start = 0x%lx\r\n", buffer_data_start);
+  #endif
 
   if(data_len > (shared_buffer_size - (buffer_data_start - shared_buffer))){
     goto ocall_error;
@@ -398,6 +413,9 @@ void handle_syscall(struct encl_ctx* ctx)
     break;
   }
 
+  #if RT_DEBUG_PRINT 
+  print_strace("D[RT] %lu - I'm returning %lu", n, ret);
+  #endif
   /* store the result in the stack */
   ctx->regs.a0 = ret;
   return;
