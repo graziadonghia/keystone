@@ -241,31 +241,31 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
   switch (cmd) {
     case KEYSTONE_IOC_CREATE_ENCLAVE:
       #if LKD_DEBUG_PRINT
-      pr_info("D[LKD] Create enclave (linux-keystone-driver/keystone-ioctl.c)\n");
+      pr_info("D[LKD] Create enclave [%u] (linux-keystone-driver/keystone-ioctl.c)\n", cmd);
       #endif
       ret = keystone_create_enclave(filep, (unsigned long) data);
       break;
     case KEYSTONE_IOC_FINALIZE_ENCLAVE:
       #if LKD_DEBUG_PRINT
-      pr_info("D[LKD] Finalize enclave (linux-keystone-driver/keystone-ioctl.c)\n");
+      pr_info("D[LKD] Finalize enclave [%u] (linux-keystone-driver/keystone-ioctl.c)\n", cmd);
       #endif
       ret = keystone_finalize_enclave((unsigned long) data);
       break;
     case KEYSTONE_IOC_DESTROY_ENCLAVE:
       #if LKD_DEBUG_PRINT
-      pr_info("D[LKD] Destroy enclave (linux-keystone-driver/keystone-ioctl.c)\n");
+      pr_info("D[LKD] Destroy enclave [%u] (linux-keystone-driver/keystone-ioctl.c)\n", cmd);
       #endif
       ret = keystone_destroy_enclave(filep, (unsigned long) data);
       break;
     case KEYSTONE_IOC_RUN_ENCLAVE:
       #if LKD_DEBUG_PRINT
-      pr_info("D[LKD] Run enclave (linux-keystone-driver/keystone-ioctl.c)\n");
+      pr_info("D[LKD] Run enclave [%u] (linux-keystone-driver/keystone-ioctl.c)\n", cmd);
       #endif
       ret = keystone_run_enclave((unsigned long) data);
       break;
     case KEYSTONE_IOC_RESUME_ENCLAVE:
       #if LKD_DEBUG_PRINT
-      pr_info("D[LKD] Resume enclave (linux-keystone-driver/keystone-ioctl.c)\n");
+      pr_info("D[LKD] Resume enclave [%u] (linux-keystone-driver/keystone-ioctl.c)\n", cmd);
       #endif
       ret = keystone_resume_enclave((unsigned long) data);
       break;
@@ -275,7 +275,7 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
      * We didn't identified the exact problem, so we'll have these until we figure out */
     case KEYSTONE_IOC_UTM_INIT:
       #if LKD_DEBUG_PRINT
-      pr_info("D[LKD] UTM init (linux-keystone-driver/keystone-ioctl.c)\n");
+      pr_info("D[LKD] UTM init [%u] (linux-keystone-driver/keystone-ioctl.c)\n", cmd);
       #endif
       ret = utm_init_ioctl(filep, (unsigned long) data);
       break;
@@ -286,6 +286,9 @@ long keystone_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
   if (copy_to_user((void __user*) arg, data, ioc_size))
     return -EFAULT;
 
+  #if LKD_DEBUG_PRINT
+  pr_info("D[LKD] %u - I'm returning %lu\n", cmd, ret);
+  #endif
   return ret;
 }
 
