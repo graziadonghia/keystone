@@ -422,6 +422,9 @@ Enclave::run(uintptr_t* retval) {
 
   Error ret = pDevice->run(retval);
   while (ret == Error::EdgeCallHost || ret == Error::EnclaveInterrupted) {
+    #if SDK_DEBUG_PRINT
+    fprintf(stdout, "D[SDK] returned %d\n", ret);
+    #endif
     /* enclave is stopped in the middle. */
     if (ret == Error::EdgeCallHost && oFuncDispatch != NULL) {
       oFuncDispatch(getSharedBuffer());

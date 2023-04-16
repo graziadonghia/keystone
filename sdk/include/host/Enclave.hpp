@@ -26,6 +26,8 @@ extern "C" {
 #include "Memory.hpp"
 #include "Params.hpp"
 
+#define SDK_DEBUG_PRINT 0
+
 namespace Keystone {
 
 typedef std::function<void(void*)> OcallFunc;
