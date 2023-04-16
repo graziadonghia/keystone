@@ -522,9 +522,15 @@ unsigned long run_enclave(struct sbi_trap_regs *regs, enclave_id eid)
     return SBI_ERR_SM_ENCLAVE_NOT_FRESH;
   }
 
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] run_enclave - before context_switch_to_enclave\r\n");
+  #endif
   // Enclave is OK to run, context switch to it
   context_switch_to_enclave(regs, eid, 1);
 
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] run_enclave - after context_switch_to_enclave\r\n");
+  #endif
   return SBI_ERR_SM_ENCLAVE_SUCCESS;
 }
 
@@ -565,8 +571,14 @@ unsigned long stop_enclave(struct sbi_trap_regs *regs, uint64_t request, enclave
   if(!stoppable)
     return SBI_ERR_SM_ENCLAVE_NOT_RUNNING;
 
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] stop_enclave - before context_switch_to_host\r\n");
+  #endif
   context_switch_to_host(regs, eid, request == STOP_EDGE_CALL_HOST);
 
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] stop_enclave - after context_switch_to_host\r\n");
+  #endif
   switch(request) {
     case(STOP_TIMER_INTERRUPT):
       return SBI_ERR_SM_ENCLAVE_INTERRUPTED;
@@ -595,9 +607,15 @@ unsigned long resume_enclave(struct sbi_trap_regs *regs, enclave_id eid)
   }
   spin_unlock(&encl_lock);
 
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] resume_enclave - before context_switch_to_enclave\r\n");
+  #endif
   // Enclave is OK to resume, context switch to it
   context_switch_to_enclave(regs, eid, 0);
 
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] resume_enclave - after context_switch_to_enclave\r\n");
+  #endif
   return SBI_ERR_SM_ENCLAVE_SUCCESS;
 }
 

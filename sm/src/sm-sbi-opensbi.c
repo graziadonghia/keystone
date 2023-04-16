@@ -22,6 +22,9 @@ static int sbi_ecall_keystone_enclave_handler(unsigned long extid, unsigned long
                      struct sbi_trap_info *out_trap)
 {
   uintptr_t retval;
+  #if SM_DEBUG_PRINT
+  // sbi_printf("D[SM] extid = 0x%lx\r\n", extid);
+  #endif
 
   if (funcid <= FID_RANGE_DEPRECATED) { return SBI_ERR_SM_DEPRECATED; }
   else if (funcid <= FID_RANGE_HOST)
@@ -109,6 +112,9 @@ static int sbi_ecall_keystone_enclave_handler(unsigned long extid, unsigned long
       break;
   }
 
+  #if SM_DEBUG_PRINT
+  sbi_printf("D[SM] %lu - I'm returning %lu\r\n", funcid, retval);
+  #endif
   return retval;
 
 }

@@ -37,21 +37,39 @@ unsigned long sbi_sm_destroy_enclave(unsigned long eid)
 
 unsigned long sbi_sm_run_enclave(struct sbi_trap_regs *regs, unsigned long eid)
 {
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] sbi_sm_run_enclave - before run_enclave\r\n");
+  #endif
   regs->a0 = run_enclave(regs, (unsigned int) eid);
   regs->mepc += 4;
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] sbi_sm_run_enclave - between run_enclave and sbi_trap_exit\r\n");
+  #endif
   sbi_trap_exit(regs);
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] sbi_sm_run_enclave - after sbi_trap_exit\r\n");
+  #endif
   return 0;
 }
 
 unsigned long sbi_sm_resume_enclave(struct sbi_trap_regs *regs, unsigned long eid)
 {
   unsigned long ret;
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] sbi_sm_resume_enclave - before resume_enclave\r\n");
+  #endif
   ret = resume_enclave(regs, (unsigned int) eid);
   if (!regs->zero)
     regs->a0 = ret;
   regs->mepc += 4;
 
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] sbi_sm_resume_enclave - between resume_enclave and sbi_trap_exit\r\n");
+  #endif
   sbi_trap_exit(regs);
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] sbi_sm_resume_enclave - after sbi_trap_exit\r\n");
+  #endif
   return 0;
 }
 
@@ -66,9 +84,18 @@ unsigned long sbi_sm_exit_enclave(struct sbi_trap_regs *regs, unsigned long retv
 
 unsigned long sbi_sm_stop_enclave(struct sbi_trap_regs *regs, unsigned long request)
 {
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] sbi_sm_stop_enclave - before stop_enclave\r\n");
+  #endif
   regs->a0 = stop_enclave(regs, request, cpu_get_enclave_id());
   regs->mepc += 4;
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] sbi_sm_stop_enclave - between stop_enclave and sbi_trap_exit\r\n");
+  #endif
   sbi_trap_exit(regs);
+  #if SM_DEBUG_PRINT_CALL_STACK
+  sbi_printf("D[SM] sbi_sm_stop_enclave - after sbi_trap_exit\r\n");
+  #endif
   return 0;
 }
 
