@@ -11,6 +11,10 @@ memcmp(const void* ptr1, const void* ptr2, size_t len);
 void*
 memmove(void* dest, const void* src, size_t count);
 size_t
-strlen(char* str);
+strlen(const char* str);
+int 
+strcmp(const char *string1, const char *string2);
+char *
+strchr(const char *str, int c);
 
 #endif

@@ -21,7 +21,7 @@ memcpy(void* dest, const void* src, size_t len) {
 }
 
 size_t
-strlen(char* str) {
+strlen(const char* str) {
   size_t len = 0;
   while (*str != '\0') {
     str++;
@@ -88,4 +88,32 @@ memmove(void* dest, const void* src, size_t count) {
     while (count--) *--tmp = *--s;
   }
   return dest;
+}
+
+int 
+strcmp(const char *string1, const char *string2)
+{
+    for (int i = 0; ; i++)
+    {
+        if (string1[i] != string2[i])
+        {
+            return string1[i] < string2[i] ? -1 : 1;
+        }
+
+        if (string1[i] == '\0')
+        {
+            return 0;
+        }
+    }
+}
+
+char *
+strchr(const char *str, int c) {
+  int i=0;
+  while(*(str+i) != '\0'){
+    if(*(str+i) == c)
+      return (char*)(str+i);
+    i++;
+  }
+  return (char*)0;
 }

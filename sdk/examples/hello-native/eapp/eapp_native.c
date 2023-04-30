@@ -15,6 +15,9 @@ int main(){
 
   ocall_print_string("Hello World");
 
+  gen_LDevID_kp();
+  cert_LDevID_kp();
+
   EAPP_RETURN(0);
 }
 

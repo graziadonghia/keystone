@@ -33,3 +33,17 @@ get_sealing_key(
       SYSCALL_GET_SEALING_KEY, sealing_key_struct, sealing_key_struct_size,
       key_ident, key_ident_size);
 }
+
+int
+gen_LDevID_kp(void){
+  return SYSCALL_0(SYSCALL_GEN_LDEVID);
+}
+
+int
+cert_LDevID_kp(void){
+  return SYSCALL_0(SYSCALL_CERT_LDEVID);
+}
+
+int rt_print_string(void* string, size_t length){
+  return SYSCALL_2(SYSCALL_PRINT_STRING, string, length);
+}
