@@ -15,7 +15,11 @@
 #define RUNTIME_SYSCALL_SHAREDCOPY          1002
 #define RUNTIME_SYSCALL_ATTEST_ENCLAVE      1003
 #define RUNTIME_SYSCALL_GET_SEALING_KEY     1004
+#define RUNTIME_SYSCALL_PRINT_STRING        1005
 #define RUNTIME_SYSCALL_EXIT                1101
+#define RUNTIME_SYSCALL_GEN_LDEVID          1201
+#define RUNTIME_SYSCALL_CERT_LDEVID         1202
+#define OCALL_SEND_LDEVID_CSR 9
 
 void handle_syscall(struct encl_ctx* ctx);
 void init_edge_internals(void);

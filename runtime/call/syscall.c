@@ -147,6 +147,65 @@ void init_edge_internals(){
   edge_call_init_internals(shared_buffer, shared_buffer_size);
 }
 
+uintptr_t cert_LDevID_csr(void){
+  uintptr_t ret = 0;
+  size_t data_len = 0;
+  printf("Certifying LDevID keypair...\r\n");
+  ret = sbi_gen_LDevID_csr();
+  // printf("ret: %lu\r\n", ret);
+  if(ret)
+      return ret;
+
+  struct edge_call* edge_call = (struct edge_call*)shared_buffer;
+
+  edge_call->call_id = OCALL_SEND_LDEVID_CSR;
+  uintptr_t buffer_data_start = edge_call_data_ptr();
+  /*
+  if(data_len > (shared_buffer_size - (buffer_data_start - shared_buffer))){
+    goto ocall_error;
+  }
+
+  copy_from_user((void*)buffer_data_start, (void*)data, data_len);
+  */
+  if(edge_call_setup_call(edge_call, (void*)buffer_data_start, data_len) != 0){
+    goto cert_error;
+  }
+
+  // printf("Stopping enclave\r\n");
+  ret = sbi_stop_enclave(1);
+
+  // printf("Resuming enclave - ret: %lu\r\n", ret); 
+  // printf("Call status: %d\r\n", edge_call->return_data.call_status);
+
+  if (ret != 0) {
+    goto cert_error;
+  }
+
+  if(edge_call->return_data.call_status != CALL_STATUS_OK){
+    goto cert_error;
+  }
+
+  
+  /*
+  if( return_len == 0 ){
+    return (uintptr_t)NULL;
+  }
+
+  uintptr_t return_ptr;
+  size_t ret_len_untrusted;
+  if(edge_call_ret_ptr(edge_call, &return_ptr, &ret_len_untrusted) != 0){
+    goto ocall_error;
+  }
+
+  copy_to_user(return_buffer, (void*)return_ptr, return_len);
+  */
+  return 0;
+
+ cert_error:
+  /* TODO In the future, this should fault */
+  return 1;
+}
+
 void handle_syscall(struct encl_ctx* ctx)
 {
   uintptr_t n = ctx->regs.a7;
@@ -166,6 +225,7 @@ void handle_syscall(struct encl_ctx* ctx)
 
   switch (n) {
   case(RUNTIME_SYSCALL_EXIT):
+    printf("Enclave exit with status %lu\r\n", arg0);
     sbi_exit_enclave(arg0);
     break;
   case(RUNTIME_SYSCALL_OCALL):
@@ -208,6 +268,16 @@ void handle_syscall(struct encl_ctx* ctx)
     memset(rt_copy_buffer_1, 0x00, sizeof(rt_copy_buffer_1));
 
     break;
+  case(RUNTIME_SYSCALL_GEN_LDEVID):
+    ret = sbi_gen_LDevID_kp();
+    break;
+  case(RUNTIME_SYSCALL_CERT_LDEVID):
+    ret = cert_LDevID_csr();
+    break;
+  case(RUNTIME_SYSCALL_PRINT_STRING):
+    copy_from_user((void*)rt_copy_buffer_1, (void*)arg0, arg1);
+    printf((char *)rt_copy_buffer_1);
+    ret = 0;
 
 
 #ifdef USE_LINUX_SYSCALL
