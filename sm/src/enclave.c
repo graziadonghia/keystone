@@ -680,3 +680,21 @@ unsigned long get_sealing_key(uintptr_t sealing_key, uintptr_t key_ident,
 
   return SBI_ERR_SM_ENCLAVE_SUCCESS;
 }
+
+
+unsigned long
+gen_LDevID_kp(enclave_id eid){
+    sbi_printf("Generating LDevID keypair for enclave %u...\r\n", eid);
+    sm_create_keypair(enclaves[eid].ldevid_pk, enclaves[eid].ldevid_sk, enclaves[eid].cdi);
+    sbi_printf("PK: ");
+    print_hex_string(enclaves[eid].ldevid_pk, PUBLIC_KEY_SIZE);
+    sbi_printf("SK: ");
+    print_hex_string(enclaves[eid].ldevid_sk, PRIVATE_KEY_SIZE);
+    return 0;
+}
+
+unsigned long
+gen_LDevID_csr(void){
+    sbi_printf("Generating LDevID CSR...\r\n");
+    return 0;
+}

@@ -55,6 +55,7 @@ unsigned long sbi_sm_resume_enclave(struct sbi_trap_regs *regs, unsigned long ei
 
 unsigned long sbi_sm_exit_enclave(struct sbi_trap_regs *regs, unsigned long retval)
 {
+  sbi_printf("Enclave exiting with status %lu\r\n", retval);
   regs->a0 = exit_enclave(regs, cpu_get_enclave_id());
   regs->a1 = retval;
   regs->mepc += 4;
@@ -95,5 +96,19 @@ unsigned long sbi_sm_call_plugin(uintptr_t plugin_id, uintptr_t call_id, uintptr
 {
   unsigned long ret;
   ret = call_plugin(cpu_get_enclave_id(), plugin_id, call_id, arg0, arg1);
+  return ret;
+}
+
+unsigned long sbi_sm_gen_LDevID_kp(void)
+{
+  unsigned long ret;
+  ret = gen_LDevID_kp(cpu_get_enclave_id());
+  return ret;
+}
+
+unsigned long sbi_sm_gen_LDevID_csr(void)
+{
+  unsigned long ret;
+  ret = gen_LDevID_csr();
   return ret;
 }

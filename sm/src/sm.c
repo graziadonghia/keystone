@@ -57,6 +57,11 @@ int osm_init()
   return region;
 }
 
+void sm_create_keypair(unsigned char *public_key, unsigned char *private_key, const unsigned char *seed)
+{
+  create_keypair(public_key, private_key, seed);
+}
+
 void sm_sign(void* signature, const void* data, size_t len)
 {
   sign(signature, data, len, sm_public_key, sm_private_key);

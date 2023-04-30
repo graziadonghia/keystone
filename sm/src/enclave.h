@@ -73,6 +73,12 @@ struct enclave
   byte hash[MDSIZE];
   byte sign[SIGNATURE_SIZE];
 
+  /* LDevID material */
+  byte cdi[CDI_SIZE];
+
+  byte ldevid_sk[PRIVATE_KEY_SIZE];
+  byte ldevid_pk[PUBLIC_KEY_SIZE];
+
   /* parameters */
   struct runtime_va_params_t params;
   struct runtime_pa_params pa_params;
@@ -132,4 +138,7 @@ int get_enclave_region_index(enclave_id eid, enum enclave_region_type type);
 uintptr_t get_enclave_region_base(enclave_id eid, int memid);
 uintptr_t get_enclave_region_size(enclave_id eid, int memid);
 unsigned long get_sealing_key(uintptr_t seal_key, uintptr_t key_ident, size_t key_ident_size, enclave_id eid);
+unsigned long gen_LDevID_kp(enclave_id eid);
+unsigned long gen_LDevID_csr(void);
+void print_hex_string(byte* string, int len);
 #endif

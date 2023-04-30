@@ -25,6 +25,11 @@ void hash_finalize(void* md, hash_ctx* hash_ctx)
   sha3_final(md, hash_ctx);
 }
 
+void create_keypair(byte *public_key, byte *private_key, const unsigned char *seed)
+{
+  ed25519_create_keypair(public_key, private_key, seed);
+}
+
 void sign(void* sign, const void* data, size_t len, const unsigned char* public_key, const unsigned char* private_key)
 {
   ed25519_sign(sign, data, len, public_key, private_key);

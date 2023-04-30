@@ -168,6 +168,30 @@ int validate_and_hash_epm(hash_ctx* hash_ctx, int level,
   return -1;
 }
 
+void print_hex_string(byte* string, int len){
+  for(int i = 0;i < len; i++){
+    sbi_printf("%02X", string[i]);
+  }
+  sbi_printf("\r\n");
+}
+
+unsigned long set_cdi_enclave(struct enclave* enclave){
+  int len = MDSIZE < CDI_SIZE ? MDSIZE : CDI_SIZE;
+  int i;
+  for(i = 0; i < len; i++){
+    enclave->cdi[i] = enclave->hash[i];
+  }
+  for(i = len; i < (CDI_SIZE-len); i++){
+    enclave->cdi[i] = 0;
+  }
+  sbi_printf("Enclave %u:\r\n", enclave->eid);
+  sbi_printf("- hash:\t");
+  print_hex_string(enclave->hash, MDSIZE);
+  sbi_printf("- cdi:\t");
+  print_hex_string(enclave->cdi, CDI_SIZE);
+  return SBI_ERR_SM_ENCLAVE_SUCCESS;
+}
+
 unsigned long validate_and_hash_enclave(struct enclave* enclave){
 
   hash_ctx hash_ctx;
@@ -193,6 +217,8 @@ unsigned long validate_and_hash_enclave(struct enclave* enclave){
   }
 
   hash_finalize(enclave->hash, &hash_ctx);
+
+  set_cdi_enclave(enclave);
 
   return SBI_ERR_SM_ENCLAVE_SUCCESS;
 }

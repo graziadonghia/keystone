@@ -13,6 +13,8 @@
 typedef sha3_ctx_t hash_ctx;
 #define MDSIZE  64
 
+#define CDI_SIZE 64
+
 #define SIGNATURE_SIZE  64
 #define PRIVATE_KEY_SIZE  64 // includes public key
 #define PUBLIC_KEY_SIZE 32
@@ -29,6 +31,8 @@ void hash_extend(hash_ctx* hash_ctx, const void* ptr, size_t len);
 void hash_extend_page(hash_ctx* hash_ctx, const void* ptr);
 void hash_finalize(void* md, hash_ctx* hash_ctx);
 
+
+void create_keypair(byte *public_key, byte *private_key, const unsigned char *seed);
 void sign(void* sign, const void* data, size_t len, const byte* public_key, const byte* private_key);
 int kdf(const unsigned char* salt, size_t salt_len,
         const unsigned char* ikm, size_t ikm_len,

@@ -27,6 +27,8 @@
 #define SBI_SM_GET_SEALING_KEY    3003
 #define SBI_SM_STOP_ENCLAVE       3004
 #define SBI_SM_EXIT_ENCLAVE       3006
+#define SBI_SM_GEN_LDEVID_KP      3101
+#define SBI_SM_GEN_LDEVID_CSR     3102      
 #define FID_RANGE_ENCLAVE         3999
 /* 4000-4999 are experimental */
 #define SBI_SM_CALL_PLUGIN        4000
@@ -68,6 +70,7 @@ void sm_init(bool cold_boot);
 /* platform specific functions */
 #define ATTESTATION_KEY_LENGTH  64
 void sm_retrieve_pubkey(void* dest);
+void sm_create_keypair(unsigned char *public_key, unsigned char *private_key, const unsigned char *seed);
 void sm_sign(void* sign, const void* data, size_t len);
 int sm_derive_sealing_key(unsigned char *key,
                           const unsigned char *key_ident,
