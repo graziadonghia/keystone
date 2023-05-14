@@ -4,6 +4,7 @@
 #include "sha3/sha3.h"
 #include <sbi/sbi_console.h>
 
+#define MBEDTLS_DEBUG 1
 
 //////////////////////////////////////////////////////////////////////
 // strcmp riga 114
@@ -715,7 +716,9 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx, unsigned char *buf, s
                                                             ctx->serial, ctx->serial_len));
      if (*c & 0x80) {
         if (c - buf < 1) {
+            #if MBEDTLS_DEBUG
              sbi_printf("[mbedtls_1 - 1] ret: %d\r\n", MBEDTLS_ERR_X509_BUFFER_TOO_SMALL);
+             #endif
             return MBEDTLS_ERR_X509_BUFFER_TOO_SMALL;
         }
         *(--c) = 0x0;
@@ -811,7 +814,9 @@ int mbedtls_x509write_crt_der(mbedtls_x509write_cert *ctx, unsigned char *buf, s
                                                      MBEDTLS_ASN1_CONSTRUCTED |
                                                      MBEDTLS_ASN1_SEQUENCE));
     
+    #if MBEDTLS_DEBUG
     sbi_printf("[mbedtls_1 - 2] ret: %lu\r\n", len);
+    #endif
     return (int) len;
 }
 

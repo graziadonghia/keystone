@@ -20,12 +20,16 @@ unsigned long sbi_sm_create_enclave(unsigned long* eid, uintptr_t create_args)
   ret = copy_enclave_create_args(create_args, &create_args_local);
 
   if (ret) {
+    #if SM_DICE_DEBUG
     sbi_printf("[sbi_sm_create_enclave - E] ret: %lu\r\n", ret);
+    #endif
     return ret;
   }
 
   ret = create_enclave(eid, create_args_local);
+  #if SM_DICE_DEBUG
   sbi_printf("[sbi_sm_create_enclave] ret: %lu\r\n", ret);
+  #endif
   return ret;
 }
 
@@ -33,7 +37,9 @@ unsigned long sbi_sm_destroy_enclave(unsigned long eid)
 {
   unsigned long ret;
   ret = destroy_enclave((unsigned int)eid);
+  #if SM_DICE_DEBUG
   sbi_printf("[sbi_sm_destroy_enclave] ret: %lu\r\n", ret);
+  #endif
   return ret;
 }
 

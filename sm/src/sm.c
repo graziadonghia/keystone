@@ -91,7 +91,7 @@ sha3_ctx_t ctx_hash;
 // Variable used for testing porpouse to pass data from the boot stage to the sm
 extern byte test[64];
 byte app_test[64] = {0,};
-
+byte seed_for_ECA_keys[64] = {0,};
 unsigned int sanctum_sm_size = 0x1ff000;
 
 
@@ -387,10 +387,37 @@ void sm_copy_key()
     }
     */
 
-  // From the CDI, the sm can be directly obtained the keys associated to the emebedded CA of his layer
+  // From the CDI and its measure inserted as extension in the ECA keys certificate,
+  // the sm can directly obtain the keys associated to the emebedded CA
   // that are used to signed the cert associated to the attestation key of the different enclaves 
-  ed25519_create_keypair(ECASM_pk, ECASM_priv, CDI);
+  sha3_init(&ctx_hash, 64);
+  sha3_update(&ctx_hash, CDI, 64);
+  sha3_update(&ctx_hash, uff_cert_sm.hash.p, 64);
+  sha3_final(seed_for_ECA_keys, &ctx_hash);
 
+  ed25519_create_keypair(ECASM_pk, ECASM_priv, seed_for_ECA_keys);
+  /*
+  sbi_printf("ECASM_priv: \n");
+    for(int i =0; i <64; i ++){
+        sbi_printf("%02x",ECASM_priv[i]);//   pk_ctx->pub_key[i]);
+    }
+  sbi_printf("\n\n\n\n");
+  sbi_printf("test: \n");
+    for(int i =0; i <64; i ++){
+        sbi_printf("%02x",test[i]);//   pk_ctx->pub_key[i]);
+    }
+  sbi_printf("\n\n\n\n");
+  */
+  /*
+  sbi_printf("length_cert_root:");
+  sbi_printf("%d", length_cert_root);
+  sbi_printf("\n-------------------------------------------------\n");
+  sbi_printf("cert root der format:\n");
+  for(int i = 0; i < length_cert_root; i ++){
+    sbi_printf("0x%02x,", cert_root[i]);
+  }
+  sbi_printf("\n-------------------------------------------------\n");
+*/
 
   /*
   * To check that the data read from the certificate is the correct one created in the booting stage

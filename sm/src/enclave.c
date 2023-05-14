@@ -367,7 +367,9 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
 
   /* Runtime parameters */
   if(!is_create_args_valid(&create_args)){
+    #if SM_DICE_DEBUG
     sbi_printf("[create_enclave - 1] ret: ILLEGAL_ARGUMENT\r\n");
+    #endif
     return SBI_ERR_SM_ENCLAVE_ILLEGAL_ARGUMENT;
   }
     
@@ -385,26 +387,34 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   // allocate eid
   ret = SBI_ERR_SM_ENCLAVE_NO_FREE_RESOURCE;
   if (encl_alloc_eid(&eid) != SBI_ERR_SM_ENCLAVE_SUCCESS){
+    #if SM_DICE_DEBUG
     sbi_printf("[create_enclave - goto 1] ret: NO_FREE_RESOURCE\r\n");
+    #endif
     goto error;
   }
 
   // create a PMP region bound to the enclave
   ret = SBI_ERR_SM_ENCLAVE_PMP_FAILURE;
   if(pmp_region_init_atomic(base, size, PMP_PRI_ANY, &region, 0)){
+    #if SM_DICE_DEBUG
     sbi_printf("[create_enclave - goto 2] ret: PMP_FAILURE\r\n");
+    #endif
     goto free_encl_idx;
   }
 
   // create PMP region for shared memory
   if(pmp_region_init_atomic(utbase, utsize, PMP_PRI_BOTTOM, &shared_region, 0)){
+    #if SM_DICE_DEBUG
     sbi_printf("[create_enclave - goto 3] ret: NO_FREE_RESOURCE\r\n");
+    #endif
     goto free_region;
   }
 
   // set pmp registers for private region (not shared)
   if(pmp_set_global(region, PMP_NO_PERM)){
+    #if SM_DICE_DEBUG
     sbi_printf("[create_enclave - goto 4] ret: NO_FREE_RESOURCE\r\n");
+    #endif
     goto free_shared_region;
   }
   // cleanup some memory regions for sanity See issue #38
@@ -434,7 +444,9 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
      it may modify the enclave struct */
   ret = platform_create_enclave(&enclaves[eid]);
   if (ret){
+    #if SM_DICE_DEBUG
     sbi_printf("[create_enclave - goto 5] ret: %lu\r\n", ret);
+    #endif
     goto unset_region;
   }
 
@@ -463,7 +475,9 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   ret = mbedtls_x509write_crt_set_issuer_name_mod(&enclaves[eid].crt_local_att, "O=Security Monitor");
   if (ret != 0)
   {
-    sbi_printf("[create_enclave - 2] Valerio\r\n");
+    #if SM_DICE_DEBUG
+    sbi_printf("[create_enclave - 2] DICE\r\n");
+    #endif
     return 0;
   }
   
@@ -471,7 +485,9 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   ret = mbedtls_x509write_crt_set_subject_name_mod(&enclaves[eid].crt_local_att, "O=Enclave" );
   if (ret != 0)
   {
-    sbi_printf("[create_enclave - 3] Valerio\r\n");
+    #if SM_DICE_DEBUG
+    sbi_printf("[create_enclave - 3] DICE\r\n");
+    #endif
     return 0;
   }
 
@@ -488,13 +504,17 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   ret = mbedtls_pk_parse_public_key(&issu_key, ECASM_priv, 64, 1);
   if (ret != 0)
   {
-    sbi_printf("[create_enclave - 4] Valerio\r\n");
+    #if SM_DICE_DEBUG
+    sbi_printf("[create_enclave - 4] DICE\r\n");
+    #endif
     return 0;
   }
   ret = mbedtls_pk_parse_public_key(&issu_key, ECASM_pk, 32, 0);
   if (ret != 0)
   {
-    sbi_printf("[create_enclave - 5] Valerio\r\n");
+    #if SM_DICE_DEBUG
+    sbi_printf("[create_enclave - 5] DICE\r\n");
+    #endif
     return 0;
   }
 
@@ -502,7 +522,9 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   ret = mbedtls_pk_parse_public_key(&subj_key, enclaves[eid].local_att_pub, 32, 0);
   if (ret != 0)
   {
-    sbi_printf("[create_enclave - 6] Valerio\r\n");
+    #if SM_DICE_DEBUG
+    sbi_printf("[create_enclave - 6] DICE\r\n");
+    #endif
     return 0;
   }
 
@@ -526,7 +548,9 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   ret = mbedtls_x509write_crt_set_validity(&enclaves[eid].crt_local_att, "20220101000000", "20230101000000");
   if (ret != 0)
   {
-    sbi_printf("[create_enclave - 7] Valerio\r\n");
+    #if SM_DICE_DEBUG
+    sbi_printf("[create_enclave - 7] DICE\r\n");
+    #endif
     return 0;
   }
   const char oid_ext[] = {0xff, 0x20, 0xff};
@@ -542,7 +566,9 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   ret = mbedtls_x509write_crt_der(&enclaves[eid].crt_local_att, cert_der, len_cert_der_tot, NULL, NULL);
   if (ret != 0)
   {
+    #if SM_DICE_DEBUG
     sbi_printf("[create_enclave - err 1] ret: %lu\r\n", ret);
+    #endif
     effe_len_cert_der = ret;
     ret = 0;
   }
@@ -566,7 +592,9 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
 
   /* The enclave is fresh if it has been validated and hashed but not run yet. */
   if (ret){
+    #if SM_DICE_DEBUG
     sbi_printf("[create_enclave - goto 6] ret: %lu\r\n", ret);
+    #endif
     goto unlock;
   }
   enclaves[eid].state = FRESH;
@@ -575,7 +603,9 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
 
   spin_unlock(&encl_lock);
 
+  #if SM_DICE_DEBUG
   sbi_printf("[create_enclave - 8] ret: SUCCESS\r\n");
+  #endif
   return SBI_ERR_SM_ENCLAVE_SUCCESS;
 
 unlock:
@@ -591,7 +621,9 @@ free_region:
 free_encl_idx:
   encl_free_eid(eid);
 error:
+  #if SM_DICE_DEBUG
   sbi_printf("[create_enclave - E] ret: %lu\r\n", ret);
+  #endif
   return ret;
 }
 
@@ -855,24 +887,31 @@ unsigned long create_keypair(enclave_id eid, unsigned char* pk, int index){
   unsigned char sk_app[PRIVATE_KEY_SIZE];
 
   unsigned char app[65];
+
+  // The new keypair is obtained adding at the end of the CDI of the enclave an index, provided by the enclave itself
   my_memcpy(app, enclaves[eid].CDI, 64);
   app[64] = index + '0';
   
+  #if SM_DICE_DEBUG
   sbi_printf("SM - Create keypair: %d\r\n", index);
+  #endif
 
   sha3_ctx_t ctx_hash;
 
+  // The hash function is used to provide the seed for the keys generation
   sha3_init(&ctx_hash, 64);
   sha3_update(&ctx_hash, app, 65);
   sha3_final(seed, &ctx_hash);
 
   ed25519_create_keypair(pk_app, sk_app, seed);
   
+  // The new keypair is stored in the relatives arrays
   for(int i = 0; i < PUBLIC_KEY_SIZE; i ++)
     enclaves[eid].pk_array[enclaves[eid].n_keypair][i] = pk_app[i];
   for(int i = 0; i < PRIVATE_KEY_SIZE; i ++)
     enclaves[eid].sk_array[enclaves[eid].n_keypair][i] = sk_app[i];
   
+  // The first keypair that is asked to be created is the Local Device Keys, that is inserted in the relative variables
   if(enclaves[eid].n_keypair == 0){
     my_memcpy(enclaves[eid].sk_ldev, sk_app, PRIVATE_KEY_SIZE );
     my_memcpy(enclaves[eid].pk_ldev, pk_app, PUBLIC_KEY_SIZE);
@@ -880,12 +919,16 @@ unsigned long create_keypair(enclave_id eid, unsigned char* pk, int index){
 
   enclaves[eid].n_keypair +=1;
 
+  #if SM_DICE_DEBUG
   print_hex_string("SM - Create keypair", pk_app, PUBLIC_KEY_SIZE);
-
-  //sbi_printf("SM - Create keypair: P1\r\n");
+  #endif
+  
   my_memcpy(pk, pk_app, PUBLIC_KEY_SIZE);
-  //sbi_printf("SM - Create keypair: P2\r\n");
-  return SBI_ERR_SM_ENCLAVE_SUCCESS;
+
+  // The location in memoty of the private key of the keypair created is clean
+  my_memset(sk_app, 0, 64);
+
+  return 0;
 }
 
 unsigned long get_cert_chain(enclave_id eid, unsigned char** certs, int* sizes){
@@ -893,15 +936,25 @@ unsigned long get_cert_chain(enclave_id eid, unsigned char** certs, int* sizes){
 
   //my_memcpy(certs[0], enclaves[eid].crt_local_att_der, enclaves[eid].crt_local_att_der_length);
   //sizes[0] = enclaves[eid].crt_local_att_der_length;
+  #if SM_DICE_DEBUG
   print_hex_string("SM - Get certs - cert_sm", cert_sm, length_cert);
+  #endif
+
+  // Providing the X509 cert in der format of the ECA and its length
   my_memcpy(certs[0], cert_sm, length_cert);
   sizes[0] = length_cert;
 
+  #if SM_DICE_DEBUG
   print_hex_string("SM - Get certs - cert_root", cert_root, length_cert_root);
+  #endif
+  // Providing the X509 cert in der format of the Device Root Key and its length
   my_memcpy(certs[1], cert_root, length_cert_root);
   sizes[1] = length_cert_root;
 
+  #if SM_DICE_DEBUG
   print_hex_string("SM - Get certs - cert_man", cert_man, length_cert_man);
+  #endif
+  // Providing the X509 cert in der format of the manufacturer key and its length
   my_memcpy(certs[2], cert_man, length_cert_man);
   sizes[2] = length_cert_man;
 
@@ -915,45 +968,64 @@ unsigned long do_crypto_op(enclave_id eid, int flag, unsigned char* data, int da
   unsigned char sign[64];
   int pos = -1;
   
+  #if SM_DICE_DEBUG
   sbi_printf("SM - Do crypto op: flag=%d\r\n", flag);
   print_hex_string("SM - Do crypto op - pk", pk, PUBLIC_KEY_SIZE);
+  #endif
+
   switch (flag){
-    //sign of TCI|pk_lDev with the private key of the attestation keypair of the enclave
-    //the sign is placed in out_data. The attestation pk can be obtained calling the get_chain_cert method
+    // Sign of TCI|pk_lDev with the private key of the attestation keypair of the enclave.
+    // The sign is placed in out_data. The attestation pk can be obtained calling the get_chain_cert method
     case 1:
       sha3_init(&ctx_hash, 64);
       sha3_update(&ctx_hash, enclaves[eid].hash, 64);
       sha3_update(&ctx_hash, enclaves[eid].pk_ldev, 32);
       sha3_final(fin_hash, &ctx_hash);
 
-      //ed25519_sign(sign, fin_hash, 64, enclaves[eid].local_att_pub, enclaves[eid].local_att_priv);
-      ed25519_sign(sign, fin_hash, 64, ECASM_pk, ECASM_priv);
+      ed25519_sign(sign, fin_hash, 64, enclaves[eid].local_att_pub, enclaves[eid].local_att_priv);
+      //ed25519_sign(sign, fin_hash, 64, ECASM_pk, ECASM_priv);
+      #if SM_DICE_DEBUG
       print_hex_string("SM - Do crypto op", sign, 64);
+      #endif
       my_memcpy(out_data, sign, 64);
       *len_out_data = 64;
       return 0;
     break;
     case 2:
-      //sign of generic data with a specific private key
-      //the pk associated with the private key that has to be used is passed by the enclave
+      // Sign of generic data with a specific private key.
+      // The pk associated with the private key that has to be used is passed by the enclave
+      #if SM_DICE_DEBUG
       sbi_printf("comparing: %d\r\n", my_memcmp(enclaves[eid].pk_array[0], pk, 32));
-      for(int i = 0;  i <= enclaves[eid].n_keypair; i ++)
+      #endif
+      // Finding the private key associated to the public key passed
+      for(int i = 0;  i < enclaves[eid].n_keypair; i ++)
         if(my_memcmp(enclaves[eid].pk_array[i], pk, 32) == 0){
           pos = i;
           break;
         }
+
+      #if SM_DICE_DEBUG
       sbi_printf("SM - Do crypto op - pos: %d\r\n", pos);
+      #endif
       if (pos == -1)
         return -1;
+
+      // Making the signature
       sha3_init(&ctx_hash, 64);
       sha3_update(&ctx_hash, data, data_len);
       sha3_final(fin_hash, &ctx_hash);
+      #if SM_DICE_DEBUG
       print_hex_string("SM - Do crypto op - encl.pk", enclaves[eid].pk_array[pos], 32);
-      print_hex_string("SM - Do crypto op - encl.pk", enclaves[eid].sk_array[pos], 64);
+      print_hex_string("SM - Do crypto op - encl.sk", enclaves[eid].sk_array[pos], 64);
       print_hex_string("SM - Do crypto op - hash", fin_hash, 64);
+      #endif
       ed25519_sign(sign, fin_hash, 64, enclaves[eid].pk_array[pos], enclaves[eid].sk_array[pos]);
      
+      #if SM_DICE_DEBUG
       print_hex_string("SM - Do crypto op", sign, 64);
+      #endif
+
+      // Providing the signature
       my_memcpy(out_data, sign, 64);
       *len_out_data = 64;
       return 0;
