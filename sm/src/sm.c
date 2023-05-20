@@ -15,6 +15,7 @@
 #include <sbi/sbi_console.h>
 #include <sbi/sbi_hart.h>
 #include "sha3/sha3.h"
+#include <sbi/sbi_timer.h>
 
 #include "x509custom.h"
 #define DRAM_BASE 0x80000000
@@ -94,6 +95,9 @@ byte app_test[64] = {0,};
 byte seed_for_ECA_keys[64] = {0,};
 unsigned int sanctum_sm_size = 0x1ff000;
 
+u64 init_value;
+u64 final_value;
+
 
 char* validation(mbedtls_x509_crt cert);
 
@@ -162,6 +166,7 @@ void sm_copy_key()
   length_cert = sanctum_length_cert;
   length_cert_root = sanctum_length_cert_root;
   length_cert_man = sanctum_length_cert_man;
+
   
   /*
   sbi_printf("ECASM_pk:\n");
@@ -182,7 +187,8 @@ void sm_copy_key()
   }
   sbi_printf("\n-------------------------------------------------\n"); */
   
-  // The different certs are parsed if there are no problems
+  // The different certs are parsed if there are no 
+  
   if ((mbedtls_x509_crt_parse_der(&uff_cert_sm, cert_sm, length_cert)) != 0){
 
       // If there are some problems parsing a cert, all the start process is stopped
@@ -250,6 +256,7 @@ void sm_copy_key()
 
   // Check that all the certs in the chain are formally correct
   char* str_ret = validation(uff_cert_sm);
+  
   if(my_strlen(str_ret) != 0){
     sbi_printf("[SM] Problem with the sm certificate: %s \n\n", str_ret);
     sbi_hart_hang();
@@ -339,13 +346,16 @@ void sm_copy_key()
   }
 
     // Some informations about the variables obtained are printed to the screen
+    /*
   sbi_printf("CDI:\n");
   for(int i = 0; i < 64; i ++){
     sbi_printf("%02x", CDI[i]);
   }
   sbi_printf("\n\n");
+  */
 
   // Checking that the measure inserted in the cert, is itself correct and that the parsing process goes well
+  /*
   sbi_printf("Measure of the sm added in the x509 crt der (extension): \n");
     for(int i =0; i <64; i ++){
         sbi_printf("%02x",uff_cert_sm.hash.p[i]);
@@ -357,14 +367,23 @@ void sm_copy_key()
         sbi_printf("%02x",sm_hash[i]);
     }
   sbi_printf("\n\n");
+  */
+  if(my_memcmp(uff_cert_sm.hash.p, sm_hash, 64) != 0){
+    sbi_printf("[SM] Problem with the extension of the certificate of the ECA");
+    sbi_hart_hang();
+  }
+  else
+      sbi_printf("[SM] No differeces between ECA cert extension and value provided by original Keystone implementation\n\n");
+  
 
   // Printing the signature of the sm cert
+  /*
   sbi_printf("Signature of the certificate: \n");
     for(int i =0; i <64; i ++){
         sbi_printf("%02x",uff_cert_sm.sig.p[i]);//   pk_ctx->pub_key[i]);
     }
   sbi_printf("\n\n\n\n");
-
+  */
  
   /**
    * Checking the measure made by the boot of the SM
@@ -396,6 +415,11 @@ void sm_copy_key()
   sha3_final(seed_for_ECA_keys, &ctx_hash);
 
   ed25519_create_keypair(ECASM_pk, ECASM_priv, seed_for_ECA_keys);
+
+  //sbi_printf("Time post operation: %ld\n", sbi_timer_value());
+  //INIT timer: 27589412d
+  //Time post operation: 27796328d
+
   /*
   sbi_printf("ECASM_priv: \n");
     for(int i =0; i <64; i ++){
@@ -489,7 +513,10 @@ void sm_init(bool cold_boot)
   if (cold_boot) {
     /* only the cold-booting hart will execute these */
     sbi_printf("[SM] Initializing ... hart [%lx]\n", csr_read(mhartid));
-    
+
+    init_value = sbi_timer_value();
+    sbi_printf("Ticks needed to enter the SM starting process: %ld\n", init_value);
+
 
     sbi_ecall_register_extension(&ecall_keystone_enclave);
 
@@ -546,6 +573,8 @@ void sm_init(bool cold_boot)
   }
 
   sbi_printf("[SM] Keystone security monitor has been initialized!\n\n");
+  final_value = sbi_timer_value();
+  sbi_printf("Ticks needed to start the SM: %ld\n", final_value - init_value);
 
   sm_print_hash();
 
@@ -556,6 +585,7 @@ void sm_init(bool cold_boot)
 
 char* validation(mbedtls_x509_crt cert){
 
+  //return "Problem with the issuer of the certificate";
   if(cert.ne_issue_arr == 0)
     return "Problem with the issuer of the certificate";
   if(cert.ne_subje_arr == 0)

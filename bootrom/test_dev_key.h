@@ -40,7 +40,7 @@ static const size_t _sanctum_length_cert_man = 234;
   
   // Setting the name of the subject of the cert
   
-  ret = mbedtls_x509write_crt_set_subject_name_mod(&cert_root, "O=Root of trust");
+  ret = mbedtls_x509write_crt_set_subject_name_mod(&cert_root, "O=Manufacturer");
   if (ret != 0)
   {
     return 0;

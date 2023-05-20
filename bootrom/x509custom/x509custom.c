@@ -2020,7 +2020,7 @@ int mbedtls_x509_get_sig_alg_mod(const mbedtls_x509_buf_crt *sig_oid, const mbed
     }
 
     *pk_alg = MBEDTLS_PK_ED25519;
-    *md_alg = MBEDTLS_MD_SHA384;
+    *md_alg = KEYSTONE_SHA3;
 
     return 0;
 }
@@ -2514,7 +2514,7 @@ static const oid_sig_alg_t oid_sig_alg[] =
     },
     {
         OID_DESCRIPTOR("\x2B\x65\x70",    "ed25519",   "ed25519 with sha3"),
-        MBEDTLS_MD_SHA512,   MBEDTLS_PK_ED25519,
+        KEYSTONE_SHA3,   MBEDTLS_PK_ED25519,
     },
 };
 

@@ -250,7 +250,7 @@ int bootloader()
   mbedtls_x509write_crt_set_serial_raw(&cert, serial, 3);
   
   // The algoithm used to do the hash for the signature is specified
-  mbedtls_x509write_crt_set_md_alg(&cert, MBEDTLS_MD_SHA512);
+  mbedtls_x509write_crt_set_md_alg(&cert, KEYSTONE_SHA3);
   
   // The validity of the crt is specified
   ret = mbedtls_x509write_crt_set_validity(&cert, "20220101000000", "20230101000000");
@@ -369,7 +369,7 @@ int bootloader()
   mbedtls_x509write_crt_set_serial_raw(&cert_root, serial_root, 3);
   
   // The algoithm used to do the hash for the signature is specified
-  mbedtls_x509write_crt_set_md_alg(&cert_root, MBEDTLS_MD_SHA512);
+  mbedtls_x509write_crt_set_md_alg(&cert_root, KEYSTONE_SHA3);
   
   // The validity of the crt is specified
   ret = mbedtls_x509write_crt_set_validity(&cert_root, "20220101000000", "20230101000000");

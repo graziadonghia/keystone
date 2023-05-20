@@ -12,6 +12,7 @@
 #include <sbi/riscv_asm.h>
 #include <sbi/riscv_locks.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_timer.h>
 #include "sha3/sha3.h"
 #include "sm.h"
 #include "ed25519/ed25519.h"
@@ -364,6 +365,9 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   enclave_id eid;
   unsigned long ret;
   int region, shared_region;
+  u64 init_value;
+  u64 final_value;
+  init_value = sbi_timer_value();
 
   /* Runtime parameters */
   if(!is_create_args_valid(&create_args)){
@@ -372,7 +376,7 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
     #endif
     return SBI_ERR_SM_ENCLAVE_ILLEGAL_ARGUMENT;
   }
-    
+
 
   /* set va params */
   struct runtime_va_params_t params = create_args.params;
@@ -542,7 +546,7 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   mbedtls_x509write_crt_set_serial_raw(&enclaves[eid].crt_local_att, serial, 3);
   
   // The algoithm used to do the hash for the signature is specified
-  mbedtls_x509write_crt_set_md_alg(&enclaves[eid].crt_local_att, MBEDTLS_MD_SHA512);
+  mbedtls_x509write_crt_set_md_alg(&enclaves[eid].crt_local_att, KEYSTONE_SHA3);
   
   // The validity of the crt is specified
   ret = mbedtls_x509write_crt_set_validity(&enclaves[eid].crt_local_att, "20220101000000", "20230101000000");
@@ -597,7 +601,11 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
     #endif
     goto unlock;
   }
+
   enclaves[eid].state = FRESH;
+  final_value = sbi_timer_value();
+  sbi_printf("Ticks needed for the creation of the enclave: %ld\n", final_value - init_value);
+
   /* EIDs are unsigned int in size, copy via simple copy */
   *eidptr = eid;
 
@@ -922,7 +930,7 @@ unsigned long create_keypair(enclave_id eid, unsigned char* pk, int index){
   #if SM_DICE_DEBUG
   print_hex_string("SM - Create keypair", pk_app, PUBLIC_KEY_SIZE);
   #endif
-  
+
   my_memcpy(pk, pk_app, PUBLIC_KEY_SIZE);
 
   // The location in memoty of the private key of the keypair created is clean
@@ -1030,12 +1038,29 @@ unsigned long do_crypto_op(enclave_id eid, int flag, unsigned char* data, int da
       *len_out_data = 64;
       return 0;
     break;
-    /*
+
     case 3:
+      // Sign of generic data with a specific private key.
+      // In this case the enclave provides directly the hash of the data that have to be signed
+
+      // Finding the private key associated to the public key passed
+      for(int i = 0;  i < enclaves[eid].n_keypair; i ++)
+        if(my_memcmp(enclaves[eid].pk_array[i], pk, 32) == 0){
+          pos = i;
+          break;
+        }
+      if (pos == -1)
+        return -1;
+
+      ed25519_sign(sign, data, data_len, enclaves[eid].pk_array[pos], enclaves[eid].sk_array[pos]);
+
+      // Providing the signature
+      my_memcpy(out_data, sign, 64);
+      *len_out_data = 64;
       return 0;
     break;
     
-    */default:
+    default:
       return -1;
     break;
   }

@@ -2,9 +2,8 @@
 #include "x509custom.h"
 #include "ed25519/ed25519.h"
 #include "sha3/sha3.h"
-#include <sbi/sbi_console.h>
 
-#define MBEDTLS_DEBUG 1
+
 
 //////////////////////////////////////////////////////////////////////
 // strcmp riga 114
@@ -1430,7 +1429,7 @@ int x509_crt_parse_der_core(mbedtls_x509_crt *crt,
         //mbedtls_x509_crt_free(crt);
         return ret;
     }
-
+    //crt->version = 3;
     if (crt->version < 0 || crt->version > 2) {
         //mbedtls_x509_crt_free(crt);
         return MBEDTLS_ERR_X509_UNKNOWN_VERSION;
@@ -2036,7 +2035,7 @@ int mbedtls_x509_get_sig_alg_mod(const mbedtls_x509_buf_crt *sig_oid, const mbed
     }
 
     *pk_alg = MBEDTLS_PK_ED25519;
-    *md_alg = MBEDTLS_MD_SHA384;
+    *md_alg = KEYSTONE_SHA3;
 
     return 0;
 }
@@ -2531,7 +2530,7 @@ static const oid_sig_alg_t oid_sig_alg[] =
     },
     {
         OID_DESCRIPTOR("\x2B\x65\x70",    "ed25519",   "ed25519 with sha3"),
-        MBEDTLS_MD_SHA512,   MBEDTLS_PK_ED25519,
+        KEYSTONE_SHA3,   MBEDTLS_PK_ED25519,
     },
 };
 
