@@ -66,7 +66,7 @@
 #define SBI_ERR_SM_PMP_REGION_OVERLAP                  100025
 #define SBI_ERR_SM_PMP_REGION_IMPOSSIBLE_TOR           100026
 
-#define SM_DICE_DEBUG 1
+#define SM_DICE_DEBUG 0
 
 void sm_init(bool cold_boot);
 

@@ -16,6 +16,9 @@
 #include "sha3/sha3.h"
 #include "sm.h"
 #include "ed25519/ed25519.h"
+#include "x509custom.h"
+
+#define PRINT_CERTS 0
 
 #define ENCL_MAX  16
 
@@ -42,6 +45,88 @@ extern byte cert_man[512];
 extern byte length_cert_man;
 sha3_ctx_t hash_ctx_to_use;
 
+int print_hex_string(char* name, unsigned char* value, int size){
+  sbi_printf("%s: 0x", name);
+  for(int i = 0; i< size; i++){
+    sbi_printf("%02x", value[i]);
+  }
+  sbi_printf("\r\n");
+  sbi_printf("%s_len: %d\r\n", name, size);
+  return 0;
+}
+
+int print_mbedtls_asn1_buf_no_arr(char *name, mbedtls_asn1_buf_no_arr buf){
+  sbi_printf("%s_tag: %02x\r\n", name, buf.tag);
+  print_hex_string(name, buf.p, buf.len);
+  return 0;
+}
+
+int print_mbedtls_asn1_buf(char *name, mbedtls_asn1_buf buf){
+  sbi_printf("%s_tag: %02x\r\n", name, buf.tag);
+  print_hex_string(name, buf.p, buf.len);
+  print_hex_string(name, buf.p_arr, buf.len);
+  return 0;
+}
+
+int print_mbedtls_asn1_named_data(char *name, mbedtls_asn1_named_data buf){
+  char tmp[128] = {0};
+  sbi_sprintf(tmp, "%s_oid", name);
+  print_mbedtls_asn1_buf(tmp, buf.oid);
+  sbi_sprintf(tmp, "%s_val", name);
+  print_mbedtls_asn1_buf(name, buf.val);
+  sbi_printf("%s_next: %p\r\n", name, buf.next);
+  return 0;
+}
+
+int print_mbedtls_x509_time(char *name, mbedtls_x509_time tm){
+  sbi_printf("%s:\r\n- year=%d, mon=%d, day=%d\r\n- hour=%d, min=%d, sec=%d\r\n",
+    name, tm.year, tm.mon, tm.day, tm.hour, tm.min, tm.sec);
+  return 0;
+}
+
+int print_mbedtls_pk_context(char *name, mbedtls_pk_context pk){
+  char tmp[128] = {0};
+  sbi_sprintf(tmp, "%s - pk", name);
+  sbi_printf("%s: %s\r\n", name, pk.pk_info->name);
+  print_hex_string(tmp, pk.pk_ctx.pub_key, PUBLIC_KEY_SIZE);
+  return 0;
+}
+
+void print_mbedtls_x509_cert(char *name, mbedtls_x509_crt crt){
+  sbi_printf("%s:\r\n", name);
+  print_mbedtls_asn1_buf_no_arr("raw", crt.raw);
+  print_mbedtls_asn1_buf_no_arr("tbs", crt.tbs);
+  sbi_printf("\r\n");
+  sbi_printf("version: %d\r\n", crt.version);
+  print_mbedtls_asn1_buf_no_arr("serial", crt.serial);
+  print_mbedtls_asn1_buf_no_arr("sig_oid", crt.sig_oid);
+  sbi_printf("\r\n");
+  print_mbedtls_asn1_buf_no_arr("issuer_raw", crt.issuer_raw);
+  print_mbedtls_asn1_buf_no_arr("subject_raw", crt.subject_raw);
+  sbi_printf("\r\n");
+  print_mbedtls_asn1_named_data("issuer", crt.issuer_arr[0]);
+  print_mbedtls_asn1_named_data("subject", crt.subject_arr[0]);
+  sbi_printf("ne_issue_arr: %d\r\n", crt.ne_issue_arr);
+  sbi_printf("ne_subje_arr: %d\r\n", crt.ne_subje_arr);
+  sbi_printf("\r\n");
+  print_mbedtls_x509_time("valid_from", crt.valid_from);
+  print_mbedtls_x509_time("valid_to", crt.valid_to);
+  sbi_printf("\r\n");
+  print_mbedtls_asn1_buf("pk_raw", crt.pk_raw);
+  print_mbedtls_pk_context("pk", crt.pk);
+  sbi_printf("\r\n");
+  print_mbedtls_asn1_buf("issuer_id", crt.issuer_id);
+  print_mbedtls_asn1_buf("subject_id", crt.subject_id);
+  print_mbedtls_asn1_buf("v3_ext", crt.v3_ext);
+  sbi_printf("\r\n");
+  print_mbedtls_asn1_buf("hash", crt.hash);
+  sbi_printf("\r\n");
+  print_mbedtls_asn1_buf("sig", crt.sig);
+  sbi_printf("sig_md: %d\r\n", crt.sig_md);
+  sbi_printf("sig_pk: %d\r\n", crt.sig_pk);
+  sbi_printf("\r\n\r\n");
+  return;
+}
 
 /****************************
  *
@@ -604,7 +689,7 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
 
   enclaves[eid].state = FRESH;
   final_value = sbi_timer_value();
-  sbi_printf("Ticks needed for the creation of the enclave: %ld\n", final_value - init_value);
+  sbi_printf("Ticks needed for the creation of the enclave: %ld\r\n", final_value - init_value);
 
   /* EIDs are unsigned int in size, copy via simple copy */
   *eidptr = eid;
@@ -878,15 +963,6 @@ unsigned long get_sealing_key(uintptr_t sealing_key, uintptr_t key_ident,
   return SBI_ERR_SM_ENCLAVE_SUCCESS;
 }
 
-void print_hex_string(char* name, unsigned char* value, int size){
-  sbi_printf("%s: 0x", name);
-  for(int i = 0; i < size; i++) {
-    sbi_printf("%02x", value[i]);
-  }
-  sbi_printf("\r\n");
-  sbi_printf("\tsize: %d\r\n", size);
-  return;
-}
 
 unsigned long create_keypair(enclave_id eid, unsigned char* pk, int index){
 
@@ -941,6 +1017,27 @@ unsigned long create_keypair(enclave_id eid, unsigned char* pk, int index){
 
 unsigned long get_cert_chain(enclave_id eid, unsigned char** certs, int* sizes){
 
+  #if PRINT_CERTS
+  unsigned char test_sm[512], test_root[512], test_man[512];
+  my_memcpy(test_sm, cert_sm, length_cert);
+  my_memcpy(test_root, cert_root, length_cert_root);
+  my_memcpy(test_man, cert_man, length_cert_man);
+  int ret;
+  mbedtls_x509_crt cert_sm_p, cert_root_p, cert_man_p;
+  mbedtls_x509_crt_init(&cert_sm_p);
+  mbedtls_x509_crt_init(&cert_root_p);
+  mbedtls_x509_crt_init(&cert_man_p);
+  ret = mbedtls_x509_crt_parse_der(&cert_sm_p, test_sm, length_cert);
+  sbi_printf("SM - cert_sm - ret: %d\r\n", ret);
+  ret = mbedtls_x509_crt_parse_der(&cert_root_p, test_root, length_cert_root);
+  sbi_printf("SM - cert_root - ret: %d\r\n", ret);
+  ret = mbedtls_x509_crt_parse_der(&cert_man_p, test_man, length_cert_man);
+  sbi_printf("SM - cert_man - ret: %d\r\n", ret);
+  sbi_printf("\r\n");
+  print_mbedtls_x509_cert("SM - cert_sm", cert_sm_p);
+  print_mbedtls_x509_cert("SM - cert_root", cert_root_p);
+  print_mbedtls_x509_cert("SM - cert_man", cert_man_p);
+  #endif
 
   //my_memcpy(certs[0], enclaves[eid].crt_local_att_der, enclaves[eid].crt_local_att_der_length);
   //sizes[0] = enclaves[eid].crt_local_att_der_length;
