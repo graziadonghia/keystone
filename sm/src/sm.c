@@ -169,6 +169,16 @@ void sm_copy_key()
 
   
   /*
+
+  sbi_printf("Lunghezza sm: %i\n", length_cert);
+  sbi_printf("Lunghezza root: %i\n", length_cert_root);
+  sbi_printf("Lunghezza man: %i\n", length_cert_man);
+   sbi_printf("cert man der format:\n");
+  for(int i = 0; i < length_cert_man; i ++){
+    sbi_printf("0x%02x,", cert_man[i]);
+  }
+  sbi_printf("\n-------------------------------------------------\n");
+
   sbi_printf("ECASM_pk:\n");
   for(int i = 0; i < 32; i ++){
     sbi_printf("%02x", ECASM_pk[i]);
@@ -247,6 +257,16 @@ void sm_copy_key()
   sbi_printf("length_cert_man:");
   sbi_printf("%d", length_cert_man);
   sbi_printf("\n-------------------------------------------------\n");
+  sbi_printf("cert man der format:\n");
+  for(int i = 0; i < length_cert_man; i ++){
+    sbi_printf("0x%02x,", cert_man[i]);
+  }
+  sbi_printf("\n-------------------------------------------------\n");
+
+    sbi_printf("length_cert:");
+  sbi_printf("%d", length_cert_man);
+  sbi_printf("\n-------------------------------------------------\n");
+
   sbi_printf("cert man der format:\n");
   for(int i = 0; i < length_cert_man; i ++){
     sbi_printf("0x%02x,", cert_man[i]);

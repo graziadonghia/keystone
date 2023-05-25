@@ -92,7 +92,7 @@ int print_mbedtls_pk_context(char *name, mbedtls_pk_context pk){
   return 0;
 }
 
-void print_mbedtls_x509_cert(char *name, mbedtls_x509_crt crt){
+int print_mbedtls_x509_cert(char *name, mbedtls_x509_crt crt){
   sbi_printf("%s:\r\n", name);
   print_mbedtls_asn1_buf_no_arr("raw", crt.raw);
   print_mbedtls_asn1_buf_no_arr("tbs", crt.tbs);
@@ -121,11 +121,14 @@ void print_mbedtls_x509_cert(char *name, mbedtls_x509_crt crt){
   sbi_printf("\r\n");
   print_mbedtls_asn1_buf("hash", crt.hash);
   sbi_printf("\r\n");
+  sbi_printf("ca_istrue: %d\r\n", crt.ca_istrue);
+  sbi_printf("max_pathlen: %d\r\n", crt.max_pathlen);
+  sbi_printf("\r\n");
   print_mbedtls_asn1_buf("sig", crt.sig);
   sbi_printf("sig_md: %d\r\n", crt.sig_md);
   sbi_printf("sig_pk: %d\r\n", crt.sig_pk);
   sbi_printf("\r\n\r\n");
-  return;
+  return 0;
 }
 
 /****************************
@@ -506,6 +509,7 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
     #endif
     goto free_shared_region;
   }
+
   // cleanup some memory regions for sanity See issue #38
   clean_enclave_memory(utbase, utsize);
 
@@ -634,7 +638,7 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   mbedtls_x509write_crt_set_md_alg(&enclaves[eid].crt_local_att, KEYSTONE_SHA3);
   
   // The validity of the crt is specified
-  ret = mbedtls_x509write_crt_set_validity(&enclaves[eid].crt_local_att, "20220101000000", "20230101000000");
+  ret = mbedtls_x509write_crt_set_validity(&enclaves[eid].crt_local_att, "20230101000000", "20240101000000");
   if (ret != 0)
   {
     #if SM_DICE_DEBUG
@@ -643,11 +647,17 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
     return 0;
   }
   const char oid_ext[] = {0xff, 0x20, 0xff};
+  //const char oid_ext2[] = {0x55, 0x1d, 0x13};
+  //unsigned char max_path[] = {0x0A};
   unsigned char app[64];
   my_memcpy(app, enclaves[eid].hash, 64);
 
   // The measure of the enclave is inserted as extension in the cert created for his local attestation keys
-  mbedtls_x509write_crt_set_extension(&enclaves[eid].crt_local_att, oid_ext, 3, 0, app, 65);
+  mbedtls_x509write_crt_set_extension(&enclaves[eid].crt_local_att, oid_ext, 3, 0, app, 64);
+  //mbedtls_x509write_crt_set_extension(&enclaves[eid].crt_local_att, oid_ext2, 3, 1, max_path, 2);
+  mbedtls_x509write_crt_set_basic_constraints(&enclaves[eid].crt_local_att, 1, 10);
+
+
 
   unsigned char cert_der[1024];
   int effe_len_cert_der = 0;
