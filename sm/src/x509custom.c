@@ -3097,12 +3097,12 @@ int x509_get_crt_ext(unsigned char **p,
             //*p +=1;
             if ((ret = x509_get_basic_constraints(p, end_ext_octet,
                                                       &crt->ca_istrue, &crt->max_pathlen)) != 0) {
-                  sbi_printf("Errore dentro basic_constraint\n");
+                  //sbi_printf("Errore dentro basic_constraint\n");
                    return ret;
                 }
         }
         else{
-            sbi_printf("Arrivato dentro else\n");
+            //sbi_printf("Arrivato dentro else\n");
             crt ->hash.p = *p;
             crt ->hash.len = 64;
             *p += 64;

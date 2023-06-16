@@ -655,7 +655,7 @@ unsigned long create_enclave(unsigned long *eidptr, struct keystone_sbi_create c
   // The measure of the enclave is inserted as extension in the cert created for his local attestation keys
   mbedtls_x509write_crt_set_extension(&enclaves[eid].crt_local_att, oid_ext, 3, 0, app, 64);
   //mbedtls_x509write_crt_set_extension(&enclaves[eid].crt_local_att, oid_ext2, 3, 1, max_path, 2);
-  mbedtls_x509write_crt_set_basic_constraints(&enclaves[eid].crt_local_att, 1, 10);
+  //mbedtls_x509write_crt_set_basic_constraints(&enclaves[eid].crt_local_att, 1, 10);
 
 
 
@@ -1097,8 +1097,8 @@ unsigned long do_crypto_op(enclave_id eid, int flag, unsigned char* data, int da
       sha3_update(&ctx_hash, enclaves[eid].pk_ldev, 32);
       sha3_final(fin_hash, &ctx_hash);
 
-      ed25519_sign(sign, fin_hash, 64, enclaves[eid].local_att_pub, enclaves[eid].local_att_priv);
-      //ed25519_sign(sign, fin_hash, 64, ECASM_pk, ECASM_priv);
+      //ed25519_sign(sign, fin_hash, 64, enclaves[eid].local_att_pub, enclaves[eid].local_att_priv);
+      ed25519_sign(sign, fin_hash, 64, ECASM_pk, ECASM_priv);
       #if SM_DICE_DEBUG
       print_hex_string("SM - Do crypto op", sign, 64);
       #endif
