@@ -151,14 +151,23 @@ int bootloader()
   sha3_update(&hash_ctx, (void *)DRAM_BASE, sanctum_sm_size);
   sha3_final(sanctum_sm_hash, &hash_ctx);
   ed25519_sign(sanctum_sm_signature_test, sanctum_sm_hash, 64, sanctum_dev_public_key, sanctum_dev_secret_key);
+  //--------------------------------------------------------------------------------------------------------------------//
+
+
+
+
+
+
+
+
 
   // Measure SM to verify the signature
   sha3_init(&hash_ctx, 64);
   sha3_update(&hash_ctx, (void *)DRAM_BASE, sanctum_sm_size);
   sha3_final(sanctum_sm_hash, &hash_ctx);
   
-  // If the signature is modified, the verification goes wrong
-  //sanctum_sm_signature_test[0] = random_byte(0);
+  // If the hash is not the correct one, the verification goes wrong
+  //sanctum_sm_hash[0] = random_byte(0);
 
   // Verify the signature of the security monitor provided by the manufacturer
 

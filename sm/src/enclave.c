@@ -973,21 +973,21 @@ unsigned long get_sealing_key(uintptr_t sealing_key, uintptr_t key_ident,
   return SBI_ERR_SM_ENCLAVE_SUCCESS;
 }
 
-
-unsigned long create_keypair(enclave_id eid, unsigned char* pk, int index){
+unsigned long create_keypair(enclave_id eid, unsigned char* pk, int seed_enc){
 
   unsigned char seed[PRIVATE_KEY_SIZE];
   unsigned char pk_app[PUBLIC_KEY_SIZE];
   unsigned char sk_app[PRIVATE_KEY_SIZE];
 
   unsigned char app[65];
+  //cambiare nome indice con seed
 
   // The new keypair is obtained adding at the end of the CDI of the enclave an index, provided by the enclave itself
   my_memcpy(app, enclaves[eid].CDI, 64);
-  app[64] = index + '0';
+  app[64] = seed_enc + '0';
   
   #if SM_DICE_DEBUG
-  sbi_printf("SM - Create keypair: %d\r\n", index);
+  sbi_printf("SM - Create keypair: %d\r\n", seed_enc);
   #endif
 
   sha3_ctx_t ctx_hash;
@@ -1106,6 +1106,7 @@ unsigned long do_crypto_op(enclave_id eid, int flag, unsigned char* data, int da
       *len_out_data = 64;
       return 0;
     break;
+    /*
     case 2:
       // Sign of generic data with a specific private key.
       // The pk associated with the private key that has to be used is passed by the enclave
@@ -1145,8 +1146,8 @@ unsigned long do_crypto_op(enclave_id eid, int flag, unsigned char* data, int da
       *len_out_data = 64;
       return 0;
     break;
-
-    case 3:
+  */
+    case 2:
       // Sign of generic data with a specific private key.
       // In this case the enclave provides directly the hash of the data that have to be signed
 
