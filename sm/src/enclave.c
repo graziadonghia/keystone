@@ -1093,9 +1093,14 @@ unsigned long do_crypto_op(enclave_id eid, int flag, unsigned char* data, int da
     // The sign is placed in out_data. The attestation pk can be obtained calling the get_chain_cert method
     case 1:
       sha3_init(&ctx_hash, 64);
+      sha3_update(&ctx_hash, data, data_len);
       sha3_update(&ctx_hash, enclaves[eid].hash, 64);
       sha3_update(&ctx_hash, enclaves[eid].pk_ldev, 32);
       sha3_final(fin_hash, &ctx_hash);
+
+      #if SM_DICE_DEBUG
+      print_hex_string("fin_hash", fin_hash, 64);
+      #endif
 
       //ed25519_sign(sign, fin_hash, 64, enclaves[eid].local_att_pub, enclaves[eid].local_att_priv);
       ed25519_sign(sign, fin_hash, 64, ECASM_pk, ECASM_priv);
