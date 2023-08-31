@@ -46,4 +46,5 @@ getting_cert_chain(uintptr_t* cert, int* sizes);
 
 unsigned long sbi_do_crypto_op(int flag, unsigned char* data, int data_len, unsigned char *out_buf, int* out_buf_len, uintptr_t pk);
 
+unsigned long sbi_sm_timer_value();
 #endif

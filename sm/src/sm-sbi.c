@@ -115,8 +115,7 @@ unsigned long sbi_sm_create_keypair(uintptr_t pk, int index)
   return ret;
 }
 
-unsigned long
-getting_cert_chain(uintptr_t* certs, int* sizes){
+unsigned long getting_cert_chain(uintptr_t* certs, int* sizes){
   unsigned long ret;
   ret = get_cert_chain(cpu_get_enclave_id(), (unsigned char **) certs, sizes);
   return ret;
@@ -126,4 +125,8 @@ unsigned long sbi_do_crypto_op(int flag, unsigned char* data, int data_len, unsi
   unsigned long ret;
   ret = do_crypto_op(cpu_get_enclave_id(), flag, data, data_len, out_buf, out_buf_len, (unsigned char *)pk);
   return ret;
+}
+
+unsigned long sbi_sm_timer_value() {
+  return sbi_timer_value(); // it should be > 0 --> check
 }
