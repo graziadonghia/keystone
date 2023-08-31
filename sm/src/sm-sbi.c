@@ -11,6 +11,7 @@
 #include "plugins/plugins.h"
 #include <sbi/riscv_asm.h>
 #include <sbi/sbi_console.h>
+#include <sbi/sbi_timer.h>
 
 unsigned long sbi_sm_create_enclave(unsigned long* eid, uintptr_t create_args)
 {
