@@ -3,6 +3,27 @@ project(keystone C)
 include(ProcessorCount)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+#set(OPENSSL_SSL_LIBRARY /home/valerio/Scrivania/openssl_riscv64_v2/lib/libssl.so)
+#set(OPENSSL_CRYPTO_LIBRARY /home/valerio/Scrivania/openssl_riscv64_v2/lib/libcrypto.so)
+#set(OPENSSL_INCLUDE_DIR /home/valerio/Scrivania/openssl_riscv64_v2/include)
+#find_package(OpenSSL REQUIRED)
+
+#set(OPENSSL_ROOT_DIR /home/valerio/keystone/bootrom/openssl)
+#set(OPENSSL_USE_STATIC_LIBS TRUE)
+#set(OPENSSL_SSL_LIBRARY /home/valerio/keystone/bootrom/openssl/ssl)
+#set(OPENSSL_CRYPTO_LIBRARY /home/valerio/keystone/bootrom/openssl/crypto)
+#set(OPENSSL_INCLUDE_DIR /home/valerio/keystone/bootrom/openssl/include)
+#find_package(OpenSSL REQUIRED)
+
+#set(OPENSSL_ROOT_DIR /home/valerio/Scrivania/openssl_riscv64_v2)
+#set(OPENSSL_SSL_LIBRARY /home/valerio/Scrivania/openssl_riscv64_v2/lib/libssl.so)
+#set(OPENSSL_CRYPTO_LIBRARY /home/valerio/Scrivania/openssl_riscv64_v2/lib/libcrypto.so)
+#set(OPENSSL_INCLUDE_DIR /home/valerio/Scrivania/openssl_riscv64_v2/include)
+#set(OPENSSL_USE_STATIC_LIBS TRUE)
+#find_package(OpenSSL REQUIRED)
+#include_directories(${OPENSSL_INCLUDE_DIR})
+
+
 ###############################################################################
 ## MACROS
 ###############################################################################
@@ -67,6 +88,9 @@ set(patchdir ${CMAKE_SOURCE_DIR}/patches)
 set(cross_compile riscv${BITS}-unknown-linux-gnu-)
 
 set(bootrom_srcdir ${CMAKE_SOURCE_DIR}/bootrom)
+
+#set(libsodium_srcdir ${CMAKE_SOURCE_DIR}/bootrom/libsodium-client/src/)
+
 set(bootrom_wrkdir ${CMAKE_BINARY_DIR}/bootrom.build)
 set(qemu_wrkdir ${CMAKE_SOURCE_DIR}/qemu/build)
 set(qemu_srcdir ${CMAKE_SOURCE_DIR}/qemu)
@@ -77,6 +101,16 @@ set(buildroot_wrkdir ${CMAKE_BINARY_DIR}/buildroot.build)
 set(buildroot_config ${confdir}/qemu_riscv${BITS}_virt_defconfig)
 set(overlay_dir ${CMAKE_BINARY_DIR}/overlay)
 set(overlay_root ${overlay_dir}/root)
+
+#set(LIBSODIUM_CLIENT_DIR /home/valerio/Scrivania/libsodium-client/src/libsodium)
+#include_directories(/home/valerio/Scrivania/libsodium-client/src/libsodium/include)
+#include_directories(/home/valerio/Scrivania/libsodium-client/src/libsodium/include/sodium)
+
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+  message(STATUS "dir='${dir}'")
+endforeach()
+
 
 if(firesim)
   message(STATUS "Using Linux defconfig: ${linux_defconfig}")
@@ -166,14 +200,47 @@ add_custom_command(DEPENDS ${buildroot_config} OUTPUT ${buildroot_wrkdir}/.confi
 ## component: bootrom
 ###############################################################################
 
+#set(libsodium /home/valerio/keystone/bootrom/libsodium-client)
+
+#TARGET_LINK_LIBRARIES("bootrom" ${OPENSSL_SSL_LIBRARY} ssl)
+#TARGET_LINK_LIBRARIES("bootrom" ${OPENSSL_CRYPTO_LIBRARY} crypto)
+#INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
+#add_dependencies("bootrom" libsodium)
+#target_link_libraries("bootrom" PRIVATE libsodium)
+#add_library(libsodium STATIC IMPORTED)
+#set_target_properties(libsodium PROPERTIES IMPORTED_LOCATION ${LIBSODIUM_CLIENT_DIR}/.libs/libsodium.a)
+#add_library(my_library ${LIBSODIUM_CLIENT_DIR}/.libs/libsodium.a)
+#set_target_properties(my_library PROPERTIES LINKER_LANGUAGE C)
+#target_include_directories(my_library PUBLIC   home/valerio/keystone/bootrom/)
+
+#add_library(sodium_lib STATIC ${libsodium}/src/libsodium)
+#set_target_properties(sodium_lib PROPERTIES LINKER_LANGUAGE C)
+#set_target_properties(lib_test PROPERTIES IMPORTED_LOCATION ${LIBSODIUM_CLIENT_DIR}/.libs/libsodium.a)
+#include_directories("/home/valerio/Scrivania/libsodium-client/src/libsodium/include")
+#include_directories(${libsodium}/src/libsodium/include)
+#target_include_directories(lib_test INTERFACE "/home/valerio/Scrivania/libsodium-client/src/libsodium/include")
+
+#add_library (staticLibA STATIC ${LIBSODIUM_CLIENT_DIR}/.libs/libsodium.a)
+#set_target_properties(staticLibA PROPERTIES LINKER_LANGUAGE C)
+#target_include_directories(staticLibA INTERFACE "/home/valerio/Scrivania/libsodium-client/src/libsodium/include")
+
+#include_directories("/home/valerio/Scrivania/libsodium-client/src/libsodium/include")
+#set(LIBSODIUM_LIB ${LIBSODIUM_CLIENT_DIR}/.libs/libsodium.a)
+#target_link_libraries(${LIBSODIUM_LIB})
+
 add_custom_command(OUTPUT ${bootrom_wrkdir} COMMAND mkdir -p ${bootrom_wrkdir})
-add_custom_target("bootrom-sync" DEPENDS ${bootrom_srcdir} ${bootrom_wrkdir}
+add_custom_target("bootrom-sync" DEPENDS ${bootrom_srcdir} ${bootrom_wrkdir}  #se aggiungo lib_test, modifica il build associato
   COMMAND rsync -r ${bootrom_srcdir}/ ${bootrom_wrkdir})
-add_custom_target("bootrom" ALL DEPENDS ${bootrom_wrkdir} ${bootrom_srcdir} "bootrom-sync"
+add_custom_target("bootrom" ALL DEPENDS ${bootrom_wrkdir} ${bootrom_srcdir} "bootrom-sync" 
   COMMAND $(MAKE) -C ${bootrom_wrkdir} O=${bootrom_wrkdir} march=${ISA} mabi=${ABI} CC=riscv${BITS}-unknown-elf-gcc
     OBJCOPY=riscv${BITS}-unknown-elf-objcopy
   COMMENT "Building bootrom"
 )
+
+
+#target_include_directories("bootrom" PRIVATE ${LIBSODIUM_CLIENT_DIR}/include)
+#add_dependencies("bootrom" lib_test)
+#add_dependencies("bootrom-sync" lib_test)
 
 
 ###############################################################################
