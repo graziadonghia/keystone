@@ -31,7 +31,7 @@ rt_option(PAGE_CRYPTO "Enable page confidentiality" OFF)
 rt_option(PAGE_HASH "Enable page integrity" OFF)
 
 # Syscall options
-rt_option(LINUX_SYSCALL "Wrap generic Linux syscalls" OFF)
+rt_option(LINUX_SYSCALL "Wrap generic Linux syscalls" ON)
 rt_option(IO_SYSCALL "Wrap Linux IO syscalls" OFF)
 rt_option(NET_SYSCALL "Wrap Linux net syscalls" OFF)
 
@@ -39,8 +39,8 @@ rt_option(NET_SYSCALL "Wrap Linux net syscalls" OFF)
 rt_option(ENV_SETUP "Set up stack environments like glibc expects" OFF)
 
 # Debugging options
-rt_option(INTERNAL_STRACE "Debug syscalls" OFF)
-rt_option(DEBUG "Enable debugging" OFF)
+rt_option(INTERNAL_STRACE "Debug syscalls" ON)
+rt_option(DEBUG "Enable debugging" ON)
 
 if(DEFINED EYRIE_SRCDIR)
     add_compile_options(-fdebug-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}=${EYRIE_SRCDIR})

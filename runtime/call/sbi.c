@@ -110,3 +110,10 @@ uintptr_t
 sbi_crypto_interface(uintptr_t flag, uintptr_t data, uintptr_t data_len, uintptr_t out_buf, uintptr_t out_buf_len, uintptr_t pk){
   return SBI_CUSTOM_CALL(SBI_EXT_EXPERIMENTAL_KEYSTONE_ENCLAVE, SBI_SM_CRYPTO_INTERFACE, flag, data, data_len, out_buf, out_buf_len, pk);
 }
+
+uintptr_t
+sbi_runtime_timer_value() {
+  SBI_CALL_0(SBI_EXT_EXPERIMENTAL_KEYSTONE_ENCLAVE, SBI_SM_TIMER_VALUE);
+  register uintptr_t a1 __asm__("a1");
+  return a1;
+}

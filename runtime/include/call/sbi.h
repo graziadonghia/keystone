@@ -24,6 +24,7 @@
 #define SBI_SM_CREATE_KEYPAIR    3007
 #define SBI_SM_GET_CHAIN         3008
 #define SBI_SM_CRYPTO_INTERFACE  3009
+#define SBI_SM_TIMER_VALUE       3010
 #define SBI_SM_CALL_PLUGIN       4000
 
 /* Plugin IDs and Call IDs */
@@ -55,5 +56,6 @@ uintptr_t
 sbi_get_cert_chain(uintptr_t certs, uintptr_t sizes);
 uintptr_t
 sbi_crypto_interface(uintptr_t flag, uintptr_t data, uintptr_t data_len, uintptr_t out_buf, uintptr_t out_buf_len, uintptr_t pk);
-
+uintptr_t
+sbi_runtime_timer_value();
 #endif

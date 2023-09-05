@@ -3,6 +3,7 @@
 // All Rights Reserved. See LICENSE for license details.
 //------------------------------------------------------------------------------
 #include "syscall.h"
+#include <time.h>
 
 /* this implementes basic system calls for the enclave */
 
@@ -49,8 +50,22 @@ crypto_interface(unsigned long flag, void* data, size_t data_len, void* out_buf,
   return CUSTOM_SYSCALL(SYSCALL_CRYPTO_INTERFACE, flag, data, data_len, out_buf, out_buf_len, pk);
 }
 
-
 int 
 rt_print_string(void* string, size_t length){
   return SYSCALL_2(SYSCALL_PRINT_STRING, string, length);
+}
+
+/* 
+wrapper for sm timer function
+sdk syscall --> runtime syscall --> sm function 
+*/
+int
+timer_value() {
+  return SYSCALL_0(SYSCALL_TIMER_VALUE);
+}
+
+/* SYS_clock_gettime comes from linux wrap, the value is 113*/
+int 
+custom_clock_gettime(void *arg) {
+  return SYSCALL_1(113, arg);
 }

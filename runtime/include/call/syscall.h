@@ -19,6 +19,7 @@
 #define RUNTIME_SYSCALL_GET_CHAIN           1006
 #define RUNTIME_SYSCALL_CRYPTO_INTERFACE    1007
 #define RUNTIME_SYSCALL_PRINT_STRING        1008
+#define RUNTIME_SYSCALL_TIMER_VALUE         1009
 #define RUNTIME_SYSCALL_EXIT                1101
 
 void handle_syscall(struct encl_ctx* ctx);

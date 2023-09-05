@@ -10,6 +10,9 @@
 #include "sealing.h"
 /* TODO We should be syncing these more explictly with the runtime
    defs */
+
+#define SYS_clock_gettime 113 /*syscall_nums.h file not found*/
+
 #define SYSCALL_OCALL 1001
 #define SYSCALL_SHAREDCOPY 1002
 #define SYSCALL_ATTEST_ENCLAVE 1003
@@ -18,6 +21,7 @@
 #define SYSCALL_GET_CHAIN 1006
 #define SYSCALL_CRYPTO_INTERFACE 1007
 #define SYSCALL_PRINT_STRING 1008
+#define SYSCALL_TIMER_VALUE 1009
 #define SYSCALL_EXIT 1101
 
 #define SYSCALL(which, arg0, arg1, arg2, arg3, arg4)           \
@@ -89,5 +93,11 @@ crypto_interface(unsigned long flag, void* data, size_t data_len, void* out_buf,
 
 int 
 rt_print_string(void* string, size_t length);
+
+int
+timer_value();
+
+int 
+custom_clock_gettime(void *arg);
 
 #endif /* syscall.h */

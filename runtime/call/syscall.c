@@ -20,6 +20,7 @@
 #include "call/io_wrap.h"
 #endif /* USE_IO_SYSCALL */
 
+#define LINUX_CLOCK 1
 #ifdef USE_LINUX_SYSCALL
 #include "call/linux_wrap.h"
 #endif /* USE_LINUX_SYSCALL */
@@ -274,10 +275,14 @@ void handle_syscall(struct encl_ctx* ctx)
     printf((char *)rt_copy_buffer_1);
     ret = 0;
     break;
+  
+  case(RUNTIME_SYSCALL_TIMER_VALUE):
+    ret = sbi_runtime_timer_value(); // it should be > 0
+    break;
 
 #ifdef USE_LINUX_SYSCALL
   case(SYS_clock_gettime):
-    ret = linux_clock_gettime((__clockid_t)arg0, (struct timespec*)arg1);
+    ret = linux_clock_gettime(CLOCK_REALTIME, (struct timespec*)arg0);
     break;
 
   case(SYS_getrandom):
